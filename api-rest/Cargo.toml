@@ -1,0 +1,18 @@
+[package]
+name = "api-rest"
+version = "0.1.0"
+edition = "2021"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+serde = { version = "1.0.130", features = ["derive"] }
+lazy_static = "1.4.0"
+
+[dependencies.rocket]
+version = "0.5.0-rc.1"
+features = ["json"]
+
+[dependencies.uuid]
+version = "0.8.2"
+features = ["serde", "v4"]

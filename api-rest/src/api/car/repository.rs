@@ -52,3 +52,47 @@ pub fn find(
 
   Ok(uw_car_collection.values().cloned().collect())
 }
+
+pub fn insert_one(input: crate::models::car::CarInput) -> Result<crate::models::car::Car, String> {
+  let car = crate::models::car::Car::new(input.name, input.brand, input.year);
+
+  CAR_COLLECTION.write().unwrap().insert(car.id, car.clone());
+
+  Ok(car)
+}
+
+pub fn update_one(input: crate::models::car::Car) -> Result<crate::models::car::Car, String> {
+  let uw_car_collection = CAR_COLLECTION.read().unwrap();
+
+  if uw_car_collection.contains_key(&input.id) {
+    CAR_COLLECTION
+      .write()
+      .unwrap()
+      .insert(input.id, input.clone());
+    return Ok(input);
+  }
+
+  Err("Car not found".to_string())
+}
+
+pub fn delete_one(filter: crate::api::car::filter::Filter) -> Result<String, String> {
+  if filter.id == None {
+    return Err("ID is required".to_string());
+  }
+
+  let car_uuid = Uuid::parse_str(filter.id.as_ref().unwrap());
+  if car_uuid.is_err() {
+    return Err("Invalid UUID".to_string());
+  }
+
+  let final_car_uuid = car_uuid.unwrap();
+
+  let uw_car_collection = CAR_COLLECTION.read().unwrap();
+
+  if uw_car_collection.contains_key(&final_car_uuid) {
+    CAR_COLLECTION.write().unwrap().remove(&final_car_uuid);
+    return Ok("Car deleted".to_string());
+  }
+
+  Err("Car not found".to_string())
+}

@@ -56,19 +56,24 @@ pub fn find(
 pub fn insert_one(input: crate::models::car::CarInput) -> Result<crate::models::car::Car, String> {
   let car = crate::models::car::Car::new(input.name, input.brand, input.year);
 
-  CAR_COLLECTION.write().unwrap().insert(car.id, car.clone());
+  let mut car_collection_lock = CAR_COLLECTION.write().unwrap();
+
+  car_collection_lock.insert(car.id, car.clone());
+
+  drop(car_collection_lock);
 
   Ok(car)
 }
 
 pub fn update_one(input: crate::models::car::Car) -> Result<crate::models::car::Car, String> {
   let uw_car_collection = CAR_COLLECTION.read().unwrap();
-
   if uw_car_collection.contains_key(&input.id) {
-    CAR_COLLECTION
-      .write()
-      .unwrap()
-      .insert(input.id, input.clone());
+    drop(uw_car_collection);
+    let mut car_collection_lock = CAR_COLLECTION.write().unwrap();
+
+    car_collection_lock.insert(input.id, input.clone());
+
+    drop(car_collection_lock);
     return Ok(input);
   }
 
@@ -88,9 +93,12 @@ pub fn delete_one(filter: crate::api::car::filter::Filter) -> Result<String, Str
   let final_car_uuid = car_uuid.unwrap();
 
   let uw_car_collection = CAR_COLLECTION.read().unwrap();
-
   if uw_car_collection.contains_key(&final_car_uuid) {
-    CAR_COLLECTION.write().unwrap().remove(&final_car_uuid);
+    drop(uw_car_collection);
+
+    let mut write_car_collection_lock = CAR_COLLECTION.write().unwrap();
+    write_car_collection_lock.remove(&final_car_uuid);
+    drop(write_car_collection_lock);
     return Ok("Car deleted".to_string());
   }
 

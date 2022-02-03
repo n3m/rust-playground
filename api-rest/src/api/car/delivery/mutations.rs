@@ -28,6 +28,7 @@ pub fn create_one(car_input: Json<CarInput>) -> Json<Response> {
 #[put("/", format = "json", data = "<car>")]
 pub fn update_one(car: Json<Car>) -> Json<Response> {
   let uw_car = car.clone();
+  println!("t1");
   if uw_car.id.is_nil() {
     return Json(Response {
       status: 404,
@@ -36,8 +37,9 @@ pub fn update_one(car: Json<Car>) -> Json<Response> {
       values: None,
     });
   }
-
+  println!("t2");
   let operation_result = crate::api::car::repository::update_one(uw_car);
+  println!("t3");
   if operation_result.is_err() {
     return Json(Response {
       status: 404,
@@ -46,7 +48,7 @@ pub fn update_one(car: Json<Car>) -> Json<Response> {
       values: None,
     });
   }
-
+  println!("t4");
   return Json(Response {
     status: 200,
     error: None,
